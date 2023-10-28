@@ -151,6 +151,14 @@ impl CrazySynth {
                             e: self.bot.p.x,
                             f: self.bot.p.y,
                         });
+                        println!("{:.1} {:.1}|{:.3} {:.3}|{:.1} {:.1}", 
+                            self.top_left.p.x,
+                            self.top_left.p.y,
+                            self.top_right.p.x,
+                            self.top_right.p.y,
+                            self.bot.p.x,
+                            self.bot.p.y,
+                        );
                     }
                     let col = vec4(120.0, 0.7, 0.3, 1.0).hsv_to_rgb();
                     let depth = 0.0;

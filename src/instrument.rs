@@ -98,9 +98,8 @@ impl AudioThreadContext {
         let duty_cycle = b;
         let et = 5.0 + e * 9.0;
         let freq = et.exp2();
-        let ct = 5.0 + c * 9.0;
-        // let fm_freq1 = ct.exp2();
-        let fm_freq1 = 2.0 * c;
+        let ct = c * 8.0;
+        let fm_freq1 = ct.exp2();
         let dt = 5.0 + d * 9.0;
         // let fm_freq2 = dt.exp2();
         let fm_freq2 = d*2.0;
