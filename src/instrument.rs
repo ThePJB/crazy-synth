@@ -32,6 +32,7 @@ pub fn initialize_audio(initial: InstrumentParams) -> UIThreadContext {
         n: 0,
         phase: 0.0,
         fm_phase: 0.0,
+        env_phase: 0.0,
     };
 
     let output_callback = move |output: &mut [f32], info: &cpal::OutputCallbackInfo| {
@@ -70,6 +71,7 @@ pub struct AudioThreadContext {
     p: InstrumentParams,
     cons: Consumer<InstrumentParams>,
     n: u64,
+    env_phase: f32,
     phase: f32,
     fm_phase: f32,
 }
@@ -97,10 +99,11 @@ impl AudioThreadContext {
         let et = 5.0 + e * 9.0;
         let freq = et.exp2();
         let ct = 5.0 + c * 9.0;
-        let fm_freq1 = ct.exp2();
+        // let fm_freq1 = ct.exp2();
+        let fm_freq1 = 2.0 * c;
         let dt = 5.0 + d * 9.0;
-        // let fm_freq2 = dt.exp2();
-        let fm_freq2 = d*2.0;
+        let fm_freq2 = dt.exp2();
+        // let fm_freq2 = d*2.0;
         // c and d can be fm freq multiplier and amplitude
         // what about f cuz. harmonics? yea dont set it to begin with
         // f be amplitude and make it maybe exp shit too
