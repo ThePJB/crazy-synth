@@ -92,7 +92,7 @@ impl AudioThreadContext {
         let e = self.p.e / 2.0 + 0.5;
         let f = self.p.f / 2.0 + 0.5;
 
-        let period = a * 4.0 + 0.1;
+        let period = a * 2.0 + 0.1;
         let duty_cycle = b;
         let et = 5.0 + e * 9.0;
         let freq = et.exp2();
@@ -100,7 +100,7 @@ impl AudioThreadContext {
         let fm_freq1 = ct.exp2();
         let dt = 5.0 + d * 9.0;
         // let fm_freq2 = dt.exp2();
-        let fm_freq2 = d*4.0;
+        let fm_freq2 = d*2.0;
         // c and d can be fm freq multiplier and amplitude
         // what about f cuz. harmonics? yea dont set it to begin with
         // f be amplitude and make it maybe exp shit too
