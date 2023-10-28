@@ -99,7 +99,8 @@ impl AudioThreadContext {
         let ct = 5.0 + c * 9.0;
         let fm_freq1 = ct.exp2();
         let dt = 5.0 + d * 9.0;
-        let fm_freq2 = dt.exp2();
+        // let fm_freq2 = dt.exp2();
+        let fm_freq2 = d*4.0;
         // c and d can be fm freq multiplier and amplitude
         // what about f cuz. harmonics? yea dont set it to begin with
         // f be amplitude and make it maybe exp shit too
@@ -113,7 +114,7 @@ impl AudioThreadContext {
         let wn = 2.0 * PI / 44100.0;
         let mut f_curr = freq;
         self.fm_phase += wn * fm_freq1;
-        f_curr += self.fm_phase.sin() * fm_freq2;
+        f_curr += self.fm_phase.sin() * fm_freq2 * freq;
 
 
         self.phase += wn * f_curr;
