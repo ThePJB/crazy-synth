@@ -53,7 +53,7 @@ pub fn initialize_audio(initial: InstrumentParams) -> UIThreadContext {
         phase: 0.0,
         fm_phase: 0.0,
         env_phase: 0.0,
-        delay_line: DelayLine::new(1000),
+        delay_line: vec![0.0; 10000].into(),
         seed: random_seed(),
     };
 
@@ -96,7 +96,7 @@ pub struct AudioThreadContext {
     env_phase: f32,
     phase: f32,
     fm_phase: f32,
-    delay_line: DelayLine,
+    delay_line: VecDeque<f32>,
     seed: u32,
 }
 
@@ -104,7 +104,10 @@ impl AudioThreadContext {
     fn write_chunk(&mut self, output: &mut [f32], info: &cpal::OutputCallbackInfo) {
         while let Some(new_params) = self.cons.pop() {
             self.p = new_params;
-            self.delay_line.resize((self.p.e + 1.0) / 2.0 * 44100.0);
+            let et = ((self.p.e + 1.0) / 2.0) * 4.0;
+            let new_len = (et.exp2()).max(1.0) as usize;
+            // self.delay_line.resize(new_len, 0.0);
+            self.delay_line = vec![0.0; new_len].into();
         }
         for sample in output.iter_mut() {
             *sample = self.next_sample();
@@ -121,52 +124,24 @@ impl AudioThreadContext {
         let e = self.p.e / 2.0 + 0.5;
         let f = self.p.f / 2.0 + 0.5;
         
-        let w = w * d;
-        let out = self.delay_line.tick(w);
+        let y = w*d*2.0 + 2.0*c*self.delay_line.pop_front().unwrap();
+        self.delay_line.push_back(y);
         
         let period = a * 2.0 + 0.1;
-        let duty_cycle = b;
-        let et = 5.0 + e * 9.0;
-        let freq = et.exp2();
-        let ct = c * 8.0;
-        let fm_freq1 = ct.exp2();
-        let dt = 5.0 + d * 9.0;
-        // let fm_freq2 = dt.exp2();
-        let fm_freq2 = d*2.0;
-        // c and d can be fm freq multiplier and amplitude
-        // what about f cuz. harmonics? yea dont set it to begin with
-        // f be amplitude and make it maybe exp shit too
-
-        // sort out this shit
-
-        let period_samples = (period * 44100.0) as u64;
-        let n = self.n % period_samples;
-        let t = n as f32 / 44100.0;
 
         let wn = 2.0 * PI / 44100.0;
-        let mut f_curr = freq;
-        self.fm_phase += wn * fm_freq1;
-        f_curr += self.fm_phase.sin() * fm_freq2 * freq;
 
-
-        self.phase += wn * f_curr;
-        if self.phase > 2.0*PI {
-            self.phase -= 2.0*PI;
+        self.env_phase += wn * 1.0 / period;
+        if self.env_phase > 2.0 * PI {
+            self.env_phase -= 2.0*PI;
         }
-        if self.fm_phase > 2.0*PI {
-            self.fm_phase -= 2.0*PI;
-        }
-        self.n += 1;
-
-        // todo obviously window
-        if t/period < duty_cycle {
-            (w + out * c) * 0.1 * f
-
-        } else {
+        let env = if self.env_phase > 2.0*PI*b {
             0.0
-        }
+        } else {
+            1.0
+        };
 
-
+        y * 0.1 * f * env
     }
 }
 
