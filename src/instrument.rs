@@ -2,7 +2,27 @@ use std::f32::consts::PI;
 
 use cpal::traits::*;
 use cpal::Device;
+use std::collections::VecDeque;
 use ringbuf::*;
+use minirng::hash::*;
+
+pub struct DelayLine {
+    pub buf: VecDeque<f32>,
+}
+impl DelayLine {
+    pub fn new(n: usize) -> Self {
+        DelayLine { buf: vec![0.0; n].into() }
+    }
+    pub fn tick(&mut self, x: f32) -> f32 {
+        let val = self.buf.pop_front();
+        self.buf.push_back(x);
+        val.unwrap()
+    }
+    pub fn resize(&mut self, n: f32) {
+        let new_len = n.max(1.0) as usize;
+        self.buf.resize(new_len, 0.0);
+    }
+}
 
 #[derive(Clone)]
 pub struct InstrumentParams {
@@ -33,6 +53,8 @@ pub fn initialize_audio(initial: InstrumentParams) -> UIThreadContext {
         phase: 0.0,
         fm_phase: 0.0,
         env_phase: 0.0,
+        delay_line: DelayLine::new(1000),
+        seed: random_seed(),
     };
 
     let output_callback = move |output: &mut [f32], info: &cpal::OutputCallbackInfo| {
@@ -74,12 +96,15 @@ pub struct AudioThreadContext {
     env_phase: f32,
     phase: f32,
     fm_phase: f32,
+    delay_line: DelayLine,
+    seed: u32,
 }
 
 impl AudioThreadContext {
     fn write_chunk(&mut self, output: &mut [f32], info: &cpal::OutputCallbackInfo) {
         while let Some(new_params) = self.cons.pop() {
             self.p = new_params;
+            self.delay_line.resize((self.p.e + 1.0) / 2.0 * 44100.0);
         }
         for sample in output.iter_mut() {
             *sample = self.next_sample();
@@ -87,13 +112,18 @@ impl AudioThreadContext {
     }
 
     fn next_sample(&mut self) -> f32 {
+        let w = next_f32(&mut self.seed);
+        
         let a = self.p.a / 2.0 + 0.5;
         let b = self.p.b / 2.0 + 0.5;
         let c = self.p.c / 2.0 + 0.5;
         let d = self.p.d / 2.0 + 0.5;
         let e = self.p.e / 2.0 + 0.5;
         let f = self.p.f / 2.0 + 0.5;
-
+        
+        let w = w * d;
+        let out = self.delay_line.tick(w);
+        
         let period = a * 2.0 + 0.1;
         let duty_cycle = b;
         let et = 5.0 + e * 9.0;
@@ -130,7 +160,8 @@ impl AudioThreadContext {
 
         // todo obviously window
         if t/period < duty_cycle {
-            f * self.phase.sin() * 0.1
+            (w + out * c) * 0.1 * f
+
         } else {
             0.0
         }

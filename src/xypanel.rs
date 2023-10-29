@@ -1,7 +1,7 @@
 use minvect::*;
-use glow_mesh::{xyzrgba::*, xyzrgba_build2d::put_line};
-
 use crate::put_rect;
+use glow_mesh::{xyzrgba::*};
+
 
 pub struct XYPanel {
     pub transform: [f32; 9],
@@ -86,8 +86,8 @@ impl XYPanel {
     }
 
     pub fn push_geometry(&self, buf: &mut Vec<XYZRGBA>, depth: f32) {
-        let col_panel = vec4(120.0, 0.7, 0.3, 1.0).hsv_to_rgb();
-        let col_lines = vec4(120.0, 0.7, 0.6, 1.0).hsv_to_rgb();
+        let col_panel = vec4(0.0, 0.7, 0.3, 1.0).hsv_to_rgb();
+        let col_lines = vec4(0.0, 0.7, 0.6, 1.0).hsv_to_rgb();
 
         // and push the rect of this which would i guess be ndc transformed by transform
         let p1 = vec2(-1.0, -1.0);

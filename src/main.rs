@@ -7,7 +7,6 @@ use instrument::initialize_audio;
 use minvect::*;
 extern crate glow_mesh;
 use glow_mesh::xyzrgba::*;
-use glow_mesh::xyzrgba_build2d::*;
 use glutin::event::{Event, WindowEvent};
 use xypanel::XYPanel;
 

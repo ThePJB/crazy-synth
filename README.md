@@ -38,3 +38,5 @@ flick control on the left
 time thing sucks dick and needs to be phase
 
 specialized fm drone pad
+figure out what it is about those regions where it does that sick shit
+get fft and osc view
