@@ -1,5 +1,5 @@
 use minvect::*;
-use glow_mesh::xyzrgba::*;
+use glow_mesh::{xyzrgba::*, xyzrgba_build2d::put_line};
 
 use crate::put_rect;
 
@@ -85,14 +85,29 @@ impl XYPanel {
         }
     }
 
-    pub fn push_geometry(&self, buf: &mut Vec<XYZRGBA>, col: Vec4, depth: f32) {
+    pub fn push_geometry(&self, buf: &mut Vec<XYZRGBA>, depth: f32) {
+        let col_panel = vec4(120.0, 0.7, 0.3, 1.0).hsv_to_rgb();
+        let col_lines = vec4(120.0, 0.7, 0.6, 1.0).hsv_to_rgb();
+
         // and push the rect of this which would i guess be ndc transformed by transform
         let p1 = vec2(-1.0, -1.0);
         let p2 = vec2(1.0, 1.0);
         let t = self.transform;
         let p1t = trans(p1, &t);
         let p2t = trans(p2, &t);
-        put_rect(buf, p1t, p2t, col, depth);
+        put_rect(buf, p1t, p2t, col_panel, depth);
+        
+        let p1 = vec2(-1.0, 0.0);
+        let p2 = vec2(1.0, 0.0);
+        let p1t = trans(p1, &t);
+        let p2t = trans(p2, &t);
+        put_line(buf, p1t, p2t, 0.01, col_lines, depth - 0.01);
+
+        let p1 = vec2(0.0, -1.0);
+        let p2 = vec2(0.0, 1.0);
+        let p1t = trans(p1, &t);
+        let p2t = trans(p2, &t);
+        put_line(buf, p1t, p2t, 0.01, col_lines, depth - 0.01);
 
         put_crosshair(buf, trans(self.p, &t));
     }

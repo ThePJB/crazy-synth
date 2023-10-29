@@ -36,3 +36,5 @@ i think one of the fm params may still need to be multiplied to frequency but th
 
 flick control on the left
 time thing sucks dick and needs to be phase
+
+specialized fm drone pad

@@ -160,12 +160,11 @@ impl CrazySynth {
                             self.bot.p.y,
                         );
                     }
-                    let col = vec4(120.0, 0.7, 0.3, 1.0).hsv_to_rgb();
                     let depth = 0.0;
                     let mut buf = vec![];
-                    self.top_left.push_geometry(&mut buf, col, depth);
-                    self.top_right.push_geometry(&mut buf, col, depth);
-                    self.bot.push_geometry(&mut buf, col, depth);
+                    self.top_left.push_geometry(&mut buf, depth);
+                    self.top_right.push_geometry(&mut buf, depth);
+                    self.bot.push_geometry(&mut buf, depth);
                     let h = upload_xyzrgba_mesh(&buf, &self.gl);
                     h.render(&self.gl);
                     self.window.swap_buffers().unwrap();

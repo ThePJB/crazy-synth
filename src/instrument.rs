@@ -130,7 +130,7 @@ impl AudioThreadContext {
 
         // todo obviously window
         if t/period < duty_cycle {
-            f * self.phase.sin()
+            f * self.phase.sin() * 0.1
         } else {
             0.0
         }
