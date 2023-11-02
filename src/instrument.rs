@@ -104,7 +104,7 @@ impl AudioThreadContext {
     fn write_chunk(&mut self, output: &mut [f32], info: &cpal::OutputCallbackInfo) {
         while let Some(new_params) = self.cons.pop() {
             self.p = new_params;
-            let et = ((self.p.e + 1.0) / 2.0) * 4.0;
+            let et = ((self.p.e + 1.0) / 2.0) * 10.0;
             let new_len = (et.exp2()).max(1.0) as usize;
             // self.delay_line.resize(new_len, 0.0);
             self.delay_line = vec![0.0; new_len].into();
@@ -124,7 +124,7 @@ impl AudioThreadContext {
         let e = self.p.e / 2.0 + 0.5;
         let f = self.p.f / 2.0 + 0.5;
         
-        let y = w*d*2.0 + 2.0*c*self.delay_line.pop_front().unwrap();
+        let y = w*d*2.0 + (0.9 + 0.1*c)*self.delay_line.pop_front().unwrap();
         self.delay_line.push_back(y);
         
         let period = a * 2.0 + 0.1;
@@ -135,11 +135,25 @@ impl AudioThreadContext {
         if self.env_phase > 2.0 * PI {
             self.env_phase -= 2.0*PI;
         }
-        let env = if self.env_phase > 2.0*PI*b {
+        let env_w = 0.1;
+        let env = if self.env_phase < env_w {
+            let window_phase = self.env_phase*(2.0*PI)/env_w;
+            window_phase.sin()
+        } else if self.env_phase - (2.0*PI*b) < env_w {
+            let b = (self.env_phase - (2.0*PI*b))/env_w;
+            1.0 - b.sin()
+        } else if self.env_phase > 2.0 * PI * b {
             0.0
         } else {
             1.0
         };
+
+        // } 
+        // let env = if self.env_phase > 2.0*PI*b {
+        //     0.0
+        // } else {
+        //     1.0
+        // };
 
         y * 0.1 * f * env
     }
@@ -147,3 +161,6 @@ impl AudioThreadContext {
 
 // more eg panning sin function etc
 // fft view always good
+// todo make window function etc.
+// fn window(n: usize, f)
+// todo address tech debt
